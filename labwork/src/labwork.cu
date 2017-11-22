@@ -5,6 +5,8 @@
 
 #define ACTIVE_THREADS 4
 
+int blockSize = 64;
+
 int main(int argc, char **argv) {
     printf("USTH ICT Master 2017, Advanced Programming for HPC.\n");
     if (argc < 2) {
@@ -44,6 +46,7 @@ int main(int argc, char **argv) {
             labwork.labwork2_GPU();
             break;
         case 3:
+            blockSize = atoi(argv[3]);
             labwork.labwork3_GPU();
             labwork.saveOutputImage("labwork3-gpu-out.jpg");
             break;
@@ -113,7 +116,6 @@ void Labwork::labwork1_OpenMP() {
             outputImage[i * 3 + 2] = outputImage[i * 3];
         }
     }   
-
 }
 
 int getSPcores(cudaDeviceProp devProp) {
@@ -199,16 +201,9 @@ void Labwork::labwork3_GPU() {
 	cudaMalloc(&devImage, inputImage->width * inputImage->height * 3);
 	cudaMalloc(&devOutput, inputImage->width * inputImage->height * 3);
 	cudaMemcpy(devImage, inputImage->buffer,inputImage->width * inputImage->height * 3, cudaMemcpyHostToDevice);
-	//int pixelCount = inputImage->width * inputImage->height;
-	   int blockSize = 64;
-	      int numBlock = pixelCount / blockSize;
-      
-	      grayscale<<<numBlock, blockSize>>>(devImage, devOutput);
-
+	int numBlock = pixelCount / blockSize;
+    	grayscale<<<numBlock, blockSize>>>(devImage, devOutput);
 	cudaMemcpy(outputImage, devImage, inputImage->width * inputImage->height * 3, cudaMemcpyDeviceToHost);
-	
-	//cudaFree(devImage);
-
 }
 
 void Labwork::labwork4_GPU() {
